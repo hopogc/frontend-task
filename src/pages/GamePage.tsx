@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useInitDeckQuery, useLazyDrawCardQuery } from '@/api/deckApi'
 import type { Card } from '@/api/deckApi'
 import { CardSlot } from '@/components/CardSlot'
@@ -21,10 +21,21 @@ export function GamePage() {
   const { data: deckData, isLoading: isDeckLoading } = useInitDeckQuery()
   const [triggerDraw, { isFetching }] = useLazyDrawCardQuery()
 
+  useEffect(() => {
+    if (!deckData?.deck_id) return
+    triggerDraw({ deckId: deckData.deck_id, count: 2 }, false).then((result) => {
+      if (!result.data) return
+      const [first, second] = result.data.cards
+      setPreviousCard(first)
+      setCurrentCard(second)
+      setRemaining(result.data.remaining)
+    })
+  }, [deckData?.deck_id])
+
   const handleDraw = async () => {
     if (!deckData?.deck_id) return
 
-    const result = await triggerDraw(deckData.deck_id, false)
+    const result = await triggerDraw({ deckId: deckData.deck_id }, false)
     if (!result.data) return
 
     const drawn = result.data.cards[0]

@@ -25,8 +25,8 @@ export const deckApi = createApi({
     initDeck: builder.query<DeckResponse, void>({
       query: () => 'deck/new/shuffle/?deck_count=1',
     }),
-    drawCard: builder.query<DrawResponse, string>({
-      query: (deckId) => `deck/${deckId}/draw/?count=1`,
+    drawCard: builder.query<DrawResponse, { deckId: string; count?: number }>({
+      query: ({ deckId, count = 1 }) => `deck/${deckId}/draw/?count=${count}`,
     }),
   }),
 })
