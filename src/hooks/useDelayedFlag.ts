@@ -4,13 +4,13 @@ export function useDelayedFlag(active: boolean, delayMs: number): boolean {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    if (!active) {
-      setShow(false)
-      return
-    }
+    if (!active) return
 
     const timer = setTimeout(() => setShow(true), delayMs)
-    return () => clearTimeout(timer)
+    return () => {
+      clearTimeout(timer)
+      setShow(false)
+    }
   }, [active, delayMs])
 
   return show

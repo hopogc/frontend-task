@@ -38,7 +38,7 @@ export function GamePage() {
       setCurrentCard(second)
       setRemaining(result.data.remaining)
     })
-  }, [deckData?.deck_id])
+  }, [deckData?.deck_id, triggerDraw])
 
   const handleDraw = async () => {
     if (!deckData?.deck_id) return
