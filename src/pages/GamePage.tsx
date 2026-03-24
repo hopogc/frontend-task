@@ -5,6 +5,7 @@ import { CardSlot } from '@/components/CardSlot'
 import { SnapMessage } from '@/components/SnapMessage'
 import { GameSummary } from '@/components/GameSummary'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export function GamePage() {
   const [previousCard, setPreviousCard] = useState<Card | null>(null)
@@ -15,7 +16,7 @@ export function GamePage() {
   const [snapValue, setSnapValue] = useState(false)
   const [snapSuit, setSnapSuit] = useState(false)
 
-  const { data: deckData } = useInitDeckQuery()
+  const { data: deckData, isLoading: isDeckLoading } = useInitDeckQuery()
   const [triggerDraw, { isFetching }] = useLazyDrawCardQuery()
 
   const handleDraw = async () => {
@@ -41,6 +42,29 @@ export function GamePage() {
 
   const isFinished = remaining === 0
 
+  if (isDeckLoading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="px-6 py-4">
+          <h1 className="text-2xl font-bold tracking-tight">SNAP!</h1>
+        </header>
+        <main className="flex-1 flex flex-col items-center justify-center gap-8 px-4">
+          <div className="flex gap-8 items-end">
+            <div className="flex flex-col items-center gap-2">
+              <Skeleton className="w-16 h-4 rounded" />
+              <Skeleton className="w-28 h-40 rounded" />
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <Skeleton className="w-16 h-4 rounded" />
+              <Skeleton className="w-28 h-40 rounded" />
+            </div>
+          </div>
+          <Skeleton className="w-32 h-10 rounded" />
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="px-6 py-4">
@@ -49,12 +73,12 @@ export function GamePage() {
 
       <main className="flex-1 flex flex-col items-center justify-center gap-8 px-4">
         <div className="flex gap-8 items-end">
-          <CardSlot card={previousCard} label="Previous" />
-          <CardSlot card={currentCard} label="Current" />
+          <CardSlot card={previousCard} label="Previous" isLoading={isFetching} />
+          <CardSlot card={currentCard} label="Current" isLoading={isFetching} />
         </div>
 
         <div className="h-10 flex items-center justify-center">
-          <SnapMessage snapValue={snapValue} snapSuit={snapSuit} />
+          {!isFetching && <SnapMessage snapValue={snapValue} snapSuit={snapSuit} />}
         </div>
 
         {isFinished ? (
@@ -65,7 +89,7 @@ export function GamePage() {
             disabled={isFetching || !deckData}
             size="lg"
           >
-            {isFetching ? 'Drawing...' : 'Draw card'}
+            Draw card
           </Button>
         )}
       </main>
