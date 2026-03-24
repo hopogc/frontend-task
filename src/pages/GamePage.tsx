@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { LoadingOverlay } from '@/components/LoadingOverlay'
 import { useDelayedFlag } from '@/hooks/useDelayedFlag'
+import { useNetworkAlert } from '@/hooks/useNetworkAlert'
+import { toast } from 'sonner'
 
 export function GamePage() {
   const [previousCard, setPreviousCard] = useState<Card | null>(null)
@@ -18,8 +20,14 @@ export function GamePage() {
   const [snapValue, setSnapValue] = useState(false)
   const [snapSuit, setSnapSuit] = useState(false)
 
-  const { data: deckData, isLoading: isDeckLoading } = useInitDeckQuery()
+  useNetworkAlert()
+
+  const { data: deckData, isLoading: isDeckLoading, isError: isDeckError } = useInitDeckQuery()
   const [triggerDraw, { isFetching }] = useLazyDrawCardQuery()
+
+  useEffect(() => {
+    if (isDeckError) toast.error('Failed to load deck', { description: 'Check your connection and reload the page.' })
+  }, [isDeckError])
 
   useEffect(() => {
     if (!deckData?.deck_id) return
@@ -36,6 +44,10 @@ export function GamePage() {
     if (!deckData?.deck_id) return
 
     const result = await triggerDraw({ deckId: deckData.deck_id }, false)
+    if (result.error) {
+      toast.error('Failed to draw card', { description: 'Check your connection and try again.' })
+      return
+    }
     if (!result.data) return
 
     const drawn = result.data.cards[0]
